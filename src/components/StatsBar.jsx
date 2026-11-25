@@ -13,10 +13,10 @@ function Count({ value }) {
     const obj = { v: cur.current };
     const t = gsap.to(obj, {
       v: value,
-      duration: 0.9,
+      duration: 1.1,
       ease: 'power2.out',
       onUpdate: () => {
-        if (ref.current) ref.current.textContent = (Math.round(obj.v * 100) / 100).toString();
+        if (ref.current) ref.current.textContent = Math.round(obj.v).toLocaleString('en-US');
       },
     });
     cur.current = value;
@@ -29,13 +29,24 @@ export default function StatsBar({ list }) {
   const total = list.length;
   const pending = list.filter((a) => a.status === 'pending').length;
   const done = list.filter((a) => a.status === 'confirmed' || a.status === 'claimed').length;
-  const sum = list.reduce((s, a) => s + (parseFloat(a.receivedReward) || 0), 0);
+  const sum = list.reduce((s, a) => s + (parseFloat(String(a.receivedReward).replace(/[^0-9.]/g, '')) || 0), 0);
+
+  const items = [
+    { label: 'الكل', value: total, icon: '📦' },
+    { label: 'قيد الانتظار', value: pending, icon: '⏳' },
+    { label: 'مؤكد / مستلم', value: done, icon: '✅' },
+    { label: 'مجموع المستلم', value: sum, icon: '💰' },
+  ];
+
   return (
-    <div className="stats">
-      <div><Count value={total} /><span>الكل</span></div>
-      <div><Count value={pending} /><span>قيد الانتظار</span></div>
-      <div><Count value={done} /><span>مؤكد / مستلم</span></div>
-      <div><Count value={sum} /><span>مجموع المستلم</span></div>
+    <div className="stats-grid">
+      {items.map((it) => (
+        <div className="stat-card" key={it.label}>
+          <div className="stat-icon">{it.icon}</div>
+          <div className="stat-value"><Count value={it.value} /></div>
+          <div className="stat-label">{it.label}</div>
+        </div>
+      ))}
     </div>
   );
 }

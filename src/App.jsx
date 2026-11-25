@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { loadAirdrops, saveAirdrops, exportJSON, importJSON } from './storage.js';
-import { enterPage, animateListIn } from './animations.js';
+import { enterPage, animateListIn, animateModal, pulse } from './animations.js';
 import StatsBar from './components/StatsBar.jsx';
 import FilterBar from './components/FilterBar.jsx';
 import AirdropForm from './components/AirdropForm.jsx';
@@ -35,7 +35,7 @@ const DEMO = [
     name: 'zkSync', projectUrl: 'https://zksync.io', chain: 'zkSync Era',
     walletAddress: '', tasks: [{ text: 'swap على syncswap', done: true }, { text: 'Hold ETH', done: true }],
     expectedReward: '~200 ZK', receivedReward: '', status: 'confirmed',
-    notes: 'مؤكد — بانتظارAnnouncement الرسمي.',
+    notes: 'مؤكد — بانتظار announcement الرسمي.',
   },
   {
     id: 'd4', dateAdded: new Date(Date.now() - 86400000 * 30).toISOString(),
@@ -108,29 +108,31 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1 className="hero-title">
-          <span className="emoji">🪂</span> متتبع الإيردروبات
-        </h1>
-        <div className="actions">
-          <button className="primary" onClick={() => setEditing({})}>+ إضافة airdrop</button>
-          <button onClick={() => exportJSON(airdrops)}>تصدير JSON</button>
-          <button onClick={() => fileRef.current.click()}>استيراد JSON</button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json"
-            hidden
-            onChange={async (e) => {
-              if (e.target.files[0]) {
-                try {
-                  persist(await importJSON(e.target.files[0]));
-                } catch {
-                  alert('ملف JSON غير صالح');
+        <div className="hero">
+          <div className="hero-kicker">🪂</div>
+          <h1 className="hero-title"><span className="text-primary">متتبع</span> <span className="text-accent">الإيردروبات</span></h1>
+          <p className="hero-sub">متتبع شخصي لإدارة ومتابعة الإيردروبات (Crypto Airdrops)</p>
+          <div className="hero-actions">
+            <button className="primary" onClick={() => setEditing({})}>+ إضافة airdrop</button>
+            <button onClick={() => exportJSON(airdrops)}>تصدير JSON</button>
+            <button onClick={() => fileRef.current.click()}>استيراد JSON</button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json"
+              hidden
+              onChange={async (e) => {
+                if (e.target.files[0]) {
+                  try {
+                    persist(await importJSON(e.target.files[0]));
+                  } catch {
+                    alert('ملف JSON غير صالح');
+                  }
                 }
-              }
-              e.target.value = '';
-            }}
-          />
+                e.target.value = '';
+              }}
+            />
+          </div>
         </div>
       </header>
 
@@ -139,14 +141,14 @@ export default function App() {
 
       <main>
         {filtered.length === 0 && (
-          <div className="empty">
+          <section className="empty-state">
             <div className="big">🪂</div>
             <h2>لا توجد airdrops بعد</h2>
             <p>ابدأ بمتابعة أول airdrop — أو</p>
             <button className="primary" onClick={() => persist(DEMO)}>
               ✨ تحميل بيانات تجريبية
             </button>
-          </div>
+          </section>
         )}
         {filtered.map((a) => (
           <AirdropCard

@@ -10,17 +10,22 @@ const statuses = [
 
 export default function FilterBar({ status, setStatus, chain, setChain }) {
   return (
-    <div className="filters">
-      {statuses.map(([v, l]) => (
-        <button key={v} className={status === v ? 'active' : ''} onClick={() => setStatus(v)}>
-          {l}
-        </button>
-      ))}
-      <input
-        placeholder="ابحث في الشبكة (chain)..."
-        value={chain}
-        onChange={(e) => setChain(e.target.value)}
-      />
+    <div className="toolbar">
+      <div className="filter-group">
+        {statuses.map(([v, l]) => (
+          <button key={v} className={status === v ? 'active' : ''} onClick={() => setStatus(v)}>
+            {l}
+          </button>
+        ))}
+      </div>
+      <div className="search-wrap">
+        <span className="search-icon">⌕</span>
+        <input
+          placeholder="ابحث في الشبكة..."
+          value={chain}
+          onChange={(e) => setChain(e.target.value)}
+        />
+      </div>
     </div>
   );
 }
