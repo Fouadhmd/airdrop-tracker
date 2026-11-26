@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { loadAirdrops, saveAirdrops } from './storage';
 import AirdropCard from './components/AirdropCard';
 import AirdropForm from './components/AirdropForm';
 import StatsBar from './components/StatsBar';
 import FilterBar from './components/FilterBar';
+import { animateHero } from './animations';
 
 const DEMO_DATA = [
   { id:'s1', name:'LayerZero', projectUrl:'https://layerzero.network', chain:'Ethereum', wallet:'0x8216...eacf', reward:'~500 ZRO', status:'pending', tasks:[{id:1, text:'جسور عبر Stargate', done:true}, {id:2, text:'الاحتفاظ حتى TGE', done:false}], dateAdded: new Date().toISOString() },
@@ -13,24 +14,48 @@ const DEMO_DATA = [
 export default function App() {
   const [airdrops, setAirdrops] = useState(loadAirdrops());
   const [filter, setFilter] = useState('all');
+  const [query, setQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
 
-  const filtered = useMemo(() => airdrops.filter(a => filter === 'all' || a.status === filter), [airdrops, filter]);
+  const titleRef = useRef(null);
+  const subtitleRef = useRef(null);
+  const actionsRef = useRef(null);
+  const statsRef = useRef(null);
+
+  useEffect(() => {
+    animateHero(titleRef, subtitleRef, actionsRef, statsRef);
+  }, []);
+
+  const filtered = useMemo(() => {
+    const byStatus = filter === 'all' ? airdrops : airdrops.filter(a => a.status === filter);
+    if (!query.trim()) return byStatus;
+    const q = query.trim().toLowerCase();
+    return byStatus.filter(a =>
+      a.name.toLowerCase().includes(q) ||
+      a.chain.toLowerCase().includes(q) ||
+      a.wallet.toLowerCase().includes(q) ||
+      (a.receivedReward || '').toLowerCase().includes(q) ||
+      (a.expectedReward || '').toLowerCase().includes(q)
+    );
+  }, [airdrops, filter, query]);
 
   return (
     <div className="app">
       <header>
         <div className="badge-tag"><span className="badge-dot"></span> لوحة تحكم شخصية</div>
-        <h1>متتبع الإيردروبات</h1>
-        <p className="subtitle">نظّم فرصك، تابع مهامك، ولا تفوّت أي Airdrop — كل شيء في مكان واحد.</p>
-        <div className="actions">
+        <h1 ref={titleRef}>متتبع الإيردروبات</h1>
+        <p ref={subtitleRef} className="subtitle">نظّم فرصك، تابع مهامك، ولا تفوّت أي Airdrop — كل شيء في مكان واحد.</p>
+        <div ref={actionsRef} className="actions">
           <button className="primary" onClick={() => setShowModal(true)}>+ إضافة Airdrop</button>
           <button onClick={() => { setAirdrops(DEMO_DATA); saveAirdrops(DEMO_DATA); }}>✨ تحميل تجريبي</button>
         </div>
       </header>
 
-      <StatsBar list={airdrops} />
-      <FilterBar current={filter} onFilter={setFilter} count={filtered.length} />
+      <div ref={statsRef}>
+        <StatsBar list={airdrops} />
+      </div>
+
+      <FilterBar status={filter} setStatus={setFilter} query={query} setQuery={setQuery} count={filtered.length} />
 
       <section className="cards-grid">
         {filtered.length > 0 ? (

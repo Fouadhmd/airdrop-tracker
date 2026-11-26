@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { animateModal } from '../animations.js';
 
 export default function AirdropForm({ initial, onSave, onCancel }) {
+  const modalRef = useRef(null);
+  const overlayRef = useRef(null);
   const [f, setF] = useState({
     name: initial?.name || '',
     projectUrl: initial?.projectUrl || '',
@@ -13,7 +15,9 @@ export default function AirdropForm({ initial, onSave, onCancel }) {
     status: initial?.status || 'pending',
     notes: initial?.notes || '',
   });
-  useEffect(() => { animateModal(); }, []);
+
+  useEffect(() => { animateModal(modalRef, overlayRef); }, []);
+
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   const submit = (e) => {
@@ -30,8 +34,8 @@ export default function AirdropForm({ initial, onSave, onCancel }) {
   };
 
   return (
-    <div className="modal-back" onClick={onCancel} role="dialog" aria-modal="true">
-      <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
+    <div ref={overlayRef} className="modal-back" onClick={onCancel} role="dialog" aria-modal="true">
+      <form ref={modalRef} className="modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <div className="modal-head">
           <div>
             <p className="modal-eyebrow">{initial ? 'تحديث' : 'إضافة جديدة'}</p>

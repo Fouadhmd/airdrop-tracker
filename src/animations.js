@@ -2,53 +2,46 @@ import gsap from 'gsap';
 
 export const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function enterPage() {
-  if (reduced()) return;
+export function animateHero(titleRef, subtitleRef, actionsRef, statsRef) {
+  if (reduced()) { return; }
   const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-  tl.from('.hero-kicker', { y: 16, opacity: 0, duration: 0.5 })
-    .from('.hero-title', { y: 32, opacity: 0, duration: 0.8 }, '-=0.3')
-    .from('.hero-sub', { y: 20, opacity: 0, duration: 0.6 }, '-=0.5')
-    .from('.hero-actions > *', { y: 16, opacity: 0, stagger: 0.08, duration: 0.5 }, '-=0.4')
-    .from('.stat-card', { y: 32, opacity: 0, scale: 0.95, stagger: 0.08, duration: 0.6 }, '-=0.3')
-    .from('.toolbar', { y: 20, opacity: 0, duration: 0.5 }, '-=0.4')
-    .from('.card, .empty-state', { y: 40, opacity: 0, stagger: 0.06, duration: 0.6 }, '-=0.3');
+  tl.from(titleRef.current, { y: 30, opacity: 0, duration: 0.8 });
+  tl.from(subtitleRef.current, { y: 20, opacity: 0, duration: 0.6 }, '-=0.4');
+  tl.from(actionsRef.current, { y: 20, opacity: 0, duration: 0.6 }, '-=0.3');
+  tl.from(statsRef.current, { y: 30, opacity: 0, duration: 0.7, stagger: 0.1 }, '-=0.4');
 }
 
-export function animateListIn() {
+export function animateModal(modalRef, overlayRef) {
+  if (reduced()) { return; }
+  gsap.from(overlayRef.current, { opacity: 0, duration: 0.3 });
+  gsap.from(modalRef.current, { scale: 0.92, opacity: 0, duration: 0.5, ease: 'back.out(1.4)' });
+}
+
+export function initParallax(cardRef) {
+  if (reduced() || !cardRef.current) return;
+  const card = cardRef.current;
+  const bounds = card.getBoundingClientRect();
+  const centerX = bounds.left + bounds.width / 2;
+  const centerY = bounds.top + bounds.height / 2;
+  const handleMove = (e) => {
+    const dx = (e.clientX - centerX) / (bounds.width / 2);
+    const dy = (e.clientY - centerY) / (bounds.height / 2);
+    gsap.to(card, { rotateY: dx * 3, rotateX: -dy * 3, duration: 0.4, ease: 'power2.out' });
+  };
+  const handleLeave = () => gsap.to(card, { rotateY: 0, rotateX: 0, duration: 0.6, ease: 'elastic.out(1, 0.5)' });
+  card.addEventListener('mousemove', handleMove);
+  card.addEventListener('mouseleave', handleLeave);
+  return () => { card.removeEventListener('mousemove', handleMove); card.removeEventListener('mouseleave', handleLeave); };
+}
+
+export function staggerCards(cardRefs, filterChanged = false) {
   if (reduced()) return;
-  gsap.fromTo(
-    '.card, .empty-state',
-    { y: 24, opacity: 0, scale: 0.985 },
-    { y: 0, opacity: 1, scale: 1, stagger: 0.055, duration: 0.45, ease: 'power3.out', clearProps: 'transform,opacity' }
-  );
-}
-
-export function animateModal() {
-  if (reduced()) return;
-  gsap.fromTo('.modal-back', { opacity: 0 }, { opacity: 1, duration: 0.22, ease: 'power2.out' });
-  gsap.fromTo(
-    '.modal',
-    { y: 28, opacity: 0, scale: 0.96 },
-    { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.4)' }
-  );
-}
-
-export function initParallax(element) {
-  if (reduced() || !element) return;
-  element.addEventListener('mousemove', (e) => {
-    const { left, top, width, height } = element.getBoundingClientRect();
-    const x = (e.clientX - left) / width - 0.5;
-    const y = (e.clientY - top) / height - 0.5;
-    gsap.to(element, {
-      x: x * 10,
-      y: y * 10,
-      rotationY: x * 5,
-      rotationX: y * -5,
-      duration: 0.5,
-      ease: 'power2.out'
-    });
-  });
-  element.addEventListener('mouseleave', () => {
-    gsap.to(element, { x: 0, y: 0, rotationY: 0, rotationX: 0, duration: 0.5, ease: 'power2.out' });
+  gsap.from(cardRefs, {
+    y: filterChanged ? 20 : 40,
+    opacity: 0,
+    duration: filterChanged ? 0.4 : 0.6,
+    stagger: 0.05,
+    ease: 'power3.out',
+    clearProps: 'transform,opacity',
   });
 }
