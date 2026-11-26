@@ -14,6 +14,25 @@ export function enterPage() {
     .from('.card, .empty-state', { y: 40, opacity: 0, stagger: 0.06, duration: 0.6 }, '-=0.3');
 }
 
+export function animateListIn() {
+  if (reduced()) return;
+  gsap.fromTo(
+    '.card, .empty-state',
+    { y: 24, opacity: 0, scale: 0.985 },
+    { y: 0, opacity: 1, scale: 1, stagger: 0.055, duration: 0.45, ease: 'power3.out', clearProps: 'transform,opacity' }
+  );
+}
+
+export function animateModal() {
+  if (reduced()) return;
+  gsap.fromTo('.modal-back', { opacity: 0 }, { opacity: 1, duration: 0.22, ease: 'power2.out' });
+  gsap.fromTo(
+    '.modal',
+    { y: 28, opacity: 0, scale: 0.96 },
+    { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.4)' }
+  );
+}
+
 export function initParallax(element) {
   if (reduced() || !element) return;
   element.addEventListener('mousemove', (e) => {
