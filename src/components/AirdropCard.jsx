@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { initParallax } from '../animations.js';
 
 const labels = { pending: 'قيد الانتظار', confirmed: 'مؤكد', claimed: 'مستلم', expired: 'منتهٍ' };
 const chainColors = {
@@ -15,13 +16,18 @@ function chainColor(chain) {
 }
 
 export default function AirdropCard({ a, onEdit, onDelete, onToggleTask, onStatus }) {
+  const cardRef = useRef(null);
   const total = a.tasks?.length || 0;
   const done = a.tasks?.filter((t) => t.done).length || 0;
   const pct = total ? Math.round((done / total) * 100) : 0;
   const dot = chainColor(a.chain);
 
+  useEffect(() => {
+    initParallax(cardRef.current);
+  }, []);
+
   return (
-    <article className={'card status-' + (a.status || 'pending')}>
+    <article ref={cardRef} className={'card status-' + (a.status || 'pending')}>
       <div className="card-glow" style={{ background: `radial-gradient(600px circle at 0% 0%, ${dot}18, transparent 40%)` }} />
       <div className="card-head">
         <div className="card-title-row">
